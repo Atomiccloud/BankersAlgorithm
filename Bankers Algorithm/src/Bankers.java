@@ -4,7 +4,7 @@ public class Bankers {
 
 	public static void main(String[] args) {
 		Scanner s = new Scanner(System.in);
-		System.out.println("How many rows will the matrix have?");
+		System.out.println("How many processes will the matrix have?");
 		int rows = s.nextInt();
 		System.out.println("How many columns will the matrix have?");
 		int cols = s.nextInt();
@@ -20,11 +20,52 @@ public class Bankers {
 		for (int i=0; i<cols; i++) {
 			avail[i] = s.nextInt();
 		}
-		s.close();
 		
 		int[][] need = CalcNeedMatrix(max, alloc, rows, cols);
 		
+		System.out.println("Do you want to make a request? Please type 'y' or 'n'.");
+		String request = s.next();
+		if(request.equals("y")) {
+			System.out.println("What process is this request for? Options are from 0 to " + rows);
+			int process = s.nextInt();
+			int[] req = checkRequest(need, avail, cols, s, process);
+			//request is granted, remove the request from the avail and add to alloc
+			for(int i=0; i<cols;i++) {
+				avail[i] = avail[i] - req[i];
+				alloc[process][i] = alloc[process][i] + req[i];
+			}
+		} else if (request.equals("n")) {
+			System.out.println("No request made, checking if there is a safe sequence...");
+		} else {
+			System.out.println("Invalid Input. Assuming no request.");
+		}
+		
 		checkIfSafe(rows, cols, avail, max, need, alloc);
+		s.close();
+	}
+
+	private static int[] checkRequest(int[][] need, int[] avail, int cols, Scanner s, int process) {
+		int[] request = new int[cols];
+		System.out.println("Please enter the "+cols+" numbers for the request");
+		for(int i=0; i<cols; i++) {
+			request[i] = s.nextInt();
+		}
+		//check if request is greater than available
+		for(int i=0; i<cols; i++) {
+			if(request[i] > avail[i]) {
+				System.out.println("Request is greater than what's available. Denied");
+				System.exit(0);
+			}
+		}
+		//check if request is greater than need
+		for(int i=0; i<cols; i++) {
+			if(request[i] > need[process][i]) {
+				System.out.println("Request is greater than the need. Denied");
+				System.exit(0);
+			}
+		}
+		System.out.println("Request Granted. Removing request from available and adding to P"+process+"'s allocation");
+		return request;
 	}
 
 	private static void checkIfSafe(int rows, int cols, int[] avail, int[][] max, int[][] need, int[][] alloc) {
@@ -90,23 +131,13 @@ public class Bankers {
 	}
 
 	private static int[][] getInput(int rows, int cols, Scanner s) {
-
 		int[][] matrix = new int[rows][cols]; 
-		
 		
 		for (int i=0; i<rows; i++) {
 			for (int j=0; j<cols; j++) {
 				matrix[i][j] = s.nextInt();
 			}
 		}
-		
-//		System.out.println("Elements of the matrix are"); 
-//        for (int i = 0; i < rows; i++) { 
-//            for (int j = 0; j < cols; j++) 
-//                System.out.print(matrix[i][j] + "  "); 
-//            System.out.println(); 
-//        } 
-		
 		return matrix;
 	}
 
